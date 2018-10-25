@@ -9,17 +9,38 @@ let loader = {
   models: {}
 };
 
-loader.initialize = (config, thinky) => {
+/**
+ * Sanitize incoming config.
+ *
+ * @param {object} config
+ * @return {object} The sanitized config.
+ */
+const parseConfig = (config) => {
+  return Object.assign(
+    {
+      debug: false,
+      log: console.dir.bind(console),
+      ignoreModels: [],
+      modelConstructorArgs: [],
+      modelInitializeArgs: [],
+    },
+    config
+  )
+}
+
+loader.initialize = (rawConfig, thinky) => {
+  const config = parseConfig(rawConfig)
+
   loader.thinky = thinky || new Thinky(config.thinky.rethinkdb);
 
   // This will return a promise
   return loader.thinky.dbReady().then(() => {
     if (config.debug) {
-      console.dir("DB Ready");
+      config.log("DB Ready");
     }
 
     if (config.debug) {
-      console.dir("Loading models from path: " + config.modelsPath);
+      config.log("Loading models from path: " + config.modelsPath);
     }
 
     // Loads all modules from the models directory specified when the loader
@@ -42,7 +63,8 @@ loader.initialize = (config, thinky) => {
     definitions = _.mapValues(definitions, (d) => {
 
       let DefinitionModel = d.default;
-      return new DefinitionModel(loader);
+      const constructorArgs = [loader].concat(config.modelConstructorArgs || [])
+      return new DefinitionModel(...constructorArgs);
     });
 
     // Loop over each class and create the corresponding model
@@ -50,11 +72,14 @@ loader.initialize = (config, thinky) => {
       let modelId = definition.tableName || definition.globalId;
 
       if (config.debug) {
-        console.dir("Creating model id: " + modelId);
+        config.log("Creating model id: " + modelId);
       }
 
-      let model = loader.thinky.createModel(modelId, definition.schema, definition.options);
-      loader.models[modelId] = model;
+      loader.models[modelId] = loader.thinky.createModel(
+        modelId,
+        definition.schema,
+        definition.options
+      );
     });
 
     // Loop over each class and run the initialize method, usually to set up
@@ -63,11 +88,12 @@ loader.initialize = (config, thinky) => {
       let modelId = definition.tableName || definition.globalId;
 
       if (config.debug) {
-        console.dir("Initializing model id: " + modelId);
+        config.log("Initializing model id: " + modelId);
       }
 
       let model = loader.models[modelId];
-      definition.initialize(loader, model);
+      const initializeArgs = [loader, model].concat(config.modelInitializeArgs || [])
+      definition.initialize(...initializeArgs);
     });
 
     return loader;

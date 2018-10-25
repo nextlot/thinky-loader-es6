@@ -7,7 +7,7 @@ This is a refactor of `thinky-loader` to support defining Thinky models as ES6 c
 
 From `thinky-loader`'s README:
 
-Rethinkdb is awesome and Thinky is a great ORM for it. But loading multiple model definition files and making them available in a large distributed Node.js applicaiton could be better. 
+Rethinkdb is awesome and Thinky is a great ORM for it. But loading multiple model definition files and making them available in a large distributed Node.js applicaiton could be better.
 
 ## Installation
 
@@ -37,7 +37,7 @@ orm.models.Customer.orderBy({
 }).run().then(function(customers) {
      console.log(customers);
 });
-                  
+
 ```
 
 ## Configuration
@@ -49,9 +49,11 @@ _In a bootstapping or initialization file (could be your `app.js`!):_
 let orm = require('thinky-loader-es6');
 
 let ormConfig = {
-                debug     : false, 
+                debug     : false,
                 modelsPath: 'data-models/thinky',
                 ignoreModels: ['base'],
+                modelConstructorArgs: [], // additional arguments to forward directly to your models' constructors
+                modelInitializeArgs: [], // additional arguments to forward on to your models' `initialize` methods
                 thinky    : {
                         rethinkdb: {
                                 host        : 'db-0',

@@ -1,12 +1,15 @@
 {
   "name": "thinky-loader-es6",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A general purpose model loader for Thinky ORM for RethinkDB.",
   "main": "index.js",
   "author": "kohactive",
   "dependencies": {
-    "lodash": "4.3.0",
-    "require-all": "2.0.0"
+    "lodash": "^4.3.0",
+    "require-all": "^2.0.0"
+  },
+  "peerDependencies": {
+    "thinky": "^2.3.4"
   },
   "repository": {
     "type": "git",
